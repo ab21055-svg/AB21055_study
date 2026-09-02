@@ -8,8 +8,6 @@
  - `test_circle_data_n1...`:学習に使うデータセット
  - `make_overlay_comparisons.py` : 定性的評価用のオーバーレイ作成スクリプト
  - `requirements.txt` : 依存パッケージ一覧
- - `APPENDIX_REPRODUCTION.md` : 実験再現手順（詳細）
-
 
 
  ```
@@ -97,16 +95,8 @@
 		
 		```
 	- 生成ファイル: `output/overlays/<entity>/*_overlay.png`, `output/annotated/*`（オーバーレイ画像や注釈付き画像、サマリー画像）
-	- 備考: バッチ的に複数画像へオーバーレイを作るためのツールです。`predict.py` は単体数値確認用であり直接の下位互換ではありません。
-
--〇 `requirements.txt`, `APPENDIX_REPRODUCTION.md`
-	- `requirements.txt`: 仮想環境で `pip install -r requirements.txt` により依存をインストール
-	- `APPENDIX_REPRODUCTION.md`: 実験再現の詳細手順と注意点（補助ドキュメント）
-
+	
 ---
-
-もし各スクリプトの出力先やファイル名を別の場所に揃えたい（例: `outputs/` にまとめる等）なら、私が `predict_and_error_stats.py` と可視化スクリプトの出力パスを統一するパッチを作ります。どのようにまとめたいですか？
-
 ## 実験の実行順序（推奨ワークフロー）
 以下は実験を再現する際の推奨順序です。各ステップごとに実行するスクリプト、必要データ、生成されるファイルを示します。
 
@@ -121,10 +111,9 @@
 		 ```
 	 
 2) データ確認
- 	- 何をするか: 各 `test_*` フォルダに `labels.csv` と画像が揃っているか確認。`labels.csv` は学習で使う形式（`center_x,center_y,half_length` など）である必要があります。もし別形式のラベル（例: エンドポイント形式）しか無い場合は、配布先で事前に所定の CSV 形式へ変換してください（自動変換スクリプトを同梱していない配布もあります）。
-
+ 	 各 `test_*` フォルダに `labels.csv` と画像が揃っているか確認。`labels.csv` は学習で使う形式（`center_x,center_y,half_length` など）である必要があります。もし別形式のラベル（例: エンドポイント形式）しか無い場合は、配布先で事前に所定の CSV 形式へ変換してください
 3) 学習（必要なモデルごとに実行）
-	 - 何をするか: `train_circle.py` / `train_arc.py` / `train_line.py` を順に（または必要なものだけ）実行
+	 `train_circle.py` / `train_arc.py` / `train_line.py` を順に（または必要なものだけ）実行
 	 - コマンド例:
 		 ```powershell
 		 python train_circle.py
@@ -135,7 +124,7 @@
 	 - 生成物: `model_{entity}_{tag}.keras`, `loss_curve_{entity}_{tag}.png`
 
 4) 定量評価（評価データで）
-	 - 何をするか: 学習済モデルを読み `predict_and_error_stats.py` でランダムサンプルを予測・誤差集計
+学習済モデルを読み `predict_and_error_stats.py` でランダムサンプルを予測・誤差集計
 	 - コマンド例:
 		 ```powershell
 		 $env:ENTITY_TYPE='line'
@@ -147,7 +136,7 @@
 	 - 生成物: `prediction_results_{MODEL_STEM}_eval{EVAL_DATASET_SUFFIX}.csv`, `error_hist_*.png`
 
 5) 定性的評価（オーバーレイ）
- 	- 何をするか: `predict_and_error_stats.py` で作成した CSV を使って `make_overlay_comparisons.py` を実行し、真値／予測の重ね描き画像を作成します。注釈付きの詳細画像生成スクリプトは配布に含めていない場合があります。
+ 	`predict_and_error_stats.py` で作成した CSV を使って `make_overlay_comparisons.py` を実行し、真値／予測の重ね描き画像を作成します。
  	- コマンド例:
  		 ```powershell
  		 python make_overlay_comparisons.py
@@ -156,13 +145,10 @@
  	- 生成物: `output/overlays/...`（オーバーレイ画像）
 
 6) 単体確認（任意）
-	 - 何をするか: 特定の画像1枚を `predict.py` で確認
+	 特定の画像1枚を `predict.py` で確認
 	 - コマンド例:
 		 ```powershell
 		 # predict.py 内の IMG_PATH を確認・編集してから実行
 		 python predict.py
 		 ```
 	 - 生成物: 標準出力に予測値（必要なら真値）
-
-
-上記の順序で進めると、データ整備→学習→評価→可視化の流れが明確になります。順序や出力場所を変えたい場合は指示してください。
